@@ -3,7 +3,7 @@ TITLE SAMUEL_VANINI_22900955
 .model small
 
 .data
-    msg0 DB 'ESCOLHA A OPERACAO DESEJADA: 1-ADICAO 2-SUBTRACAO 3-MULTIPLICACAO 4-DIVISAO', 10, 10, '$'
+    msg0 DB 'ESCOLHA A OPERACAO DESEJADA:',10,'1-ADICAO',10, '2-SUBTRACAO',10, '3-MULTIPLICACAO',10, '4-DIVISAO', 10, 10, '$'
     msg1 DB 'DIGITE UM NUMERO DE 0 A 9:', '$'
     msg2 DB 'DIGITE O NUMERO QUE DESEJA SOMAR:', '$'
     msg3 DB 'DIGITE O NUMERO QUE DESEJA SUBTRAIR:', '$'
@@ -14,6 +14,7 @@ TITLE SAMUEL_VANINI_22900955
     msg8 DB 'PRESSIONE QUALQUER TECLA PARA VOLTAR', 10, 10, '$'
 
 .code
+
 
 MAIN PROC
 
@@ -29,16 +30,24 @@ MOV AH, 07H
 INT 21H
 
 CMP AL, 31H
-JE ADICAO        ;condicional adicao
+JNE SALTA00           ;condicional adicao
+JMP ADICAO
+SALTA00:
 
 CMP AL, 32H
-JE SUBTRACAO     ;condicional subtracao
+JNE SALTA01        ;condicional subtracao
+JMP SUBTRACAO
+SALTA01:
 
 CMP AL, 33H
-JE MULTIPLICACAO    ;condicional multi
+JNE SALTA02           ;condicional multi
+JMP MULTIPLICACAO
+SALTA02:
 
 CMP AL, 34H 
-JE DIVISAO          ;condicional divisao
+JNE SALTA03           ;condicional divisao
+JMP DIVISAO
+SALTA03:
 
 MOV AH, 09H
 LEA DX, msg7        ;se nenhuma condicao for verdadeira
@@ -57,7 +66,7 @@ INT 21H
 
 MOV AH, 01H
 INT 21H           ;entrada primeiro numero
-SUB AL, 30H
+AND AL, 0FH
 MOV BL, AL
 
 MOV AH, 02H
@@ -70,15 +79,20 @@ INT 21H
 
 MOV AH, 01H
 INT 21H
-SUB AL, 30H       ;entrada segundo numero
+AND AL, 0FH       ;entrada segundo numero
 MOV BH, AL
 
 MOV AH, 02H
 MOV DL, 10        ;espacos
 INT 21H
 
-ADD BL, BH        ;opercao logica aritmetica adicao
-ADD BL, 30H       ;+30h volta a ser caracter
+ADD BL, BH        ;operacao logica aritmetica adicao
+AND BH, 0F0H
+CMP BL, 9
+MOV AX, BX 
+JG MAIOR
+
+OR AX, 30H       ;+30h volta a ser caracter
 
 MOV AH, 09H       
 LEA DX, msg6      ;exibicao msg6 - resultado
@@ -87,6 +101,20 @@ INT 21H
 MOV AH, 02H      
 MOV DL, BL        ;exibicao resultado
 INT 21H
+
+MAIOR:
+MOV BL,10
+DIV BL
+MOV BX,AX
+MOV DL,BL
+OR DL,30H
+MOV AH,02H
+INT 21H
+
+MOV DL, BH
+OR DL,30H
+INT 21H
+
 
 JMP SAIDA
 
