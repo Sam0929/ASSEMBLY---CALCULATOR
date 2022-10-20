@@ -106,7 +106,7 @@ MAIOR:
 MOV BL,10
 DIV BL
 MOV BX,AX
-MOV DL,BL
+MOV DL,BL        ;logica para imprimir resultados maiores que 9
 OR DL,30H
 MOV AH,02H
 INT 21H
@@ -126,11 +126,48 @@ INT 21H
 
 MOV AH, 01H
 INT 21H
-SUB AL, 30H
-MOV BL, AL
+AND AL, 0FH
+MOV BH, AL
+
+MOV AH, 02H
+MOV DL, 10        ;espacos
+INT 21H
 
 MOV AH, 09H
 LEA DX, msg3      ;exibicao msg3  - digite o que deseja sub
+INT 21H
+
+MOV AH, 01H
+INT 21H
+AND AL, 0FH
+MOV BL, AL
+
+MOV AH, 02H
+MOV DL, 10        ;espacos
+INT 21H
+
+SUB BH,BL
+CMP BH,0
+JNG MENOR
+OR BH, 30H
+
+MOV AH, 09H       
+LEA DX, msg6      ;exibicao msg6 - resultado
+INT 21H
+
+MOV AH,02H
+MOV DL,BH
+INT 21H
+
+JMP SAIDA
+
+MENOR:
+MOV AH,02
+NEG BH
+OR BH,30H
+MOV DL,2DH
+INT 21H
+MOV DL,BH
 INT 21H
 
 JMP SAIDA
