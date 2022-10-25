@@ -4,15 +4,16 @@ TITLE SAMUEL_VANINI_22900955
 
 .data
     msg0 DB 'ESCOLHA A OPERACAO DESEJADA:',10,'1-ADICAO',10, '2-SUBTRACAO',10, '3-MULTIPLICACAO',10, '4-DIVISAO', 10, 10, '$'
-    msg1 DB 'DIGITE UM NUMERO DE 0 A 9:', '$'
-    msg2 DB 'DIGITE O NUMERO QUE DESEJA SOMAR:', '$'
-    msg3 DB 'DIGITE O NUMERO QUE DESEJA SUBTRAIR:', '$'
-    msg4 DB 'DIGITE O NUMERO QUE DESEJA MULTIPLICAR:', '$'
-    msg5 DB 'DIGITE O NUMERO QUE DESEJA DIVIDIR:', '$'
-    msg6 DB 'RESULTADO:', '$'
+    msg1 DB 10,'DIGITE UM NUMERO DE 0 A 9:', '$'
+    msg2 DB 10,'DIGITE O NUMERO QUE DESEJA SOMAR:', '$'
+    msg3 DB 10,'DIGITE O NUMERO QUE DESEJA SUBTRAIR:', '$'
+    msg4 DB 10,'DIGITE O NUMERO QUE DESEJA MULTIPLICAR:', '$'
+    msg5 DB 10,'DIGITE O NUMERO QUE DESEJA DIVIDIR:', '$'
+    msg6 DB 10,'RESULTADO:', '$'
     msg7 DB 'ERRO, POR FAVOR SELECIONE UMA OPERACAO VALIDA', 10, 10, '$'
     msg8 DB 'PRESSIONE QUALQUER TECLA PARA VOLTAR', 10, 10, '$'
     msg9 DB 10,10,'APERTE ENTER PARA REALIZAR UMA NOVA OPERACAO', 10, 'OU PRESSIONER QUALQUER TECLA PARA SAIR','$'
+    msg10 DB 10, 'RESTO:', '$'
     Limpa DB 19 DUP (10), '$'
 
 .code
@@ -75,10 +76,6 @@ INT 21H           ;entrada primeiro numero
 AND AL, 0FH
 MOV BL, AL
 
-MOV AH, 02H
-MOV DL, 10        ;espacos
-INT 21H
-
 MOV AH,09H
 LEA DX, msg2      ;exibicao msg2  - digite somar
 INT 21H
@@ -87,10 +84,6 @@ MOV AH, 01H
 INT 21H
 AND AL, 0FH       ;entrada segundo numero
 MOV BH, AL
-
-MOV AH, 02H
-MOV DL, 10        ;espacos
-INT 21H
 
 ADD BL, BH        ;operacao logica aritmetica adicao
 AND BH, 0F0H
@@ -138,10 +131,6 @@ INT 21H
 AND AL, 0FH
 MOV BH, AL
 
-MOV AH, 02H
-MOV DL, 10        ;espacos
-INT 21H
-
 MOV AH, 09H
 LEA DX, msg3      ;exibicao msg3  - digite o que deseja sub
 INT 21H
@@ -150,10 +139,6 @@ MOV AH, 01H
 INT 21H
 AND AL, 0FH
 MOV BL, AL
-
-MOV AH, 02H
-MOV DL, 10        ;espacos
-INT 21H
 
 MOV AH, 09H       
 LEA DX, msg6      ;exibicao msg6 - resultado
@@ -192,10 +177,6 @@ INT 21H
 AND AL, 0FH
 MOV BL, AL
 
-MOV AH, 02H
-MOV DL, 10        ;espacos
-INT 21H
-
 MOV AH, 09H
 LEA DX, msg4      ;exibicao msg4  - digite o que deseja mul
 INT 21H
@@ -204,10 +185,6 @@ MOV AH, 01H
 INT 21H
 AND AL, 0FH
 MOV BH, AL
-
-MOV AH, 02H
-MOV DL, 10        ;espacos
-INT 21H
 
 MOV AH, 09H       
 LEA DX, msg6      ;exibicao msg6 - resultado
@@ -248,15 +225,56 @@ INT 21H
 
 MOV AH, 01H
 INT 21H
-SUB AL, 30H
+AND AL, 0FH
 MOV BL, AL
-
 
 MOV AH, 09H
 LEA DX, msg5      ;exibicao msg5  - digite o que deseja div 
 INT 21H
 
+MOV AH, 01H
+INT 21H
+AND AL, 0FH
+MOV BH, AL
 
+MOV AH, 09H       
+LEA DX, msg6      ;exibicao msg6 - resultado
+INT 21H
+
+JMP INI0
+
+NEGAT:
+MOV AH,09
+LEA DX, msg10
+INT 21H 
+MOV AH,02
+OR BL, 30H
+MOV DL, BL
+INT 21H
+JMP SAIDA
+
+INI0:
+CMP BH,BL
+JNG POSIT
+JMP RESUL0
+POSIT:
+SUB BL,BH
+ADD CH, 1B
+CMP BL,0
+JNE C
+JMP RESUL0
+C:
+JMP INI0
+
+RESUL0:
+MOV AH, 02H
+OR CH, 30H
+MOV DL, CH
+INT 21H
+CMP BL,0
+JE P
+JMP NEGAT
+P:
 JMP SAIDA
 
 SAIDA:
