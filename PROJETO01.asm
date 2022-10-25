@@ -12,6 +12,8 @@ TITLE SAMUEL_VANINI_22900955
     msg6 DB 'RESULTADO:', '$'
     msg7 DB 'ERRO, POR FAVOR SELECIONE UMA OPERACAO VALIDA', 10, 10, '$'
     msg8 DB 'PRESSIONE QUALQUER TECLA PARA VOLTAR', 10, 10, '$'
+    msg9 DB 10,10,'APERTE ENTER PARA REALIZAR UMA NOVA OPERACAO', 10, 'OU PRESSIONER QUALQUER TECLA PARA SAIR','$'
+    Limpa DB 19 DUP (10), '$'
 
 .code
 
@@ -22,6 +24,10 @@ MOV AX, @DATA
 MOV DS, AX
 
 INICIO:
+MOV AH, 09H
+LEA DX, Limpa     ;exibicao Limpa  - vetor com espacos para limpar a tela
+INT 21H
+
 MOV AH, 09H
 LEA DX, msg0      ;exibicao msg0  - escolha operacao
 INT 21H
@@ -149,14 +155,14 @@ MOV AH, 02H
 MOV DL, 10        ;espacos
 INT 21H
 
-SUB BH,BL
-CMP BH,0
-JNG MENOR
-OR BH, 30H
-
 MOV AH, 09H       
 LEA DX, msg6      ;exibicao msg6 - resultado
 INT 21H
+
+SUB BH,BL
+CMP BH,-1
+JNG MENOR
+OR BH, 30H
 
 MOV AH,02H
 MOV DL,BH
@@ -207,31 +213,31 @@ MOV AH, 09H
 LEA DX, msg6      ;exibicao msg6 - resultado
 INT 21H
 
-JMP INI
-SALTA:
-CMP BH, 0
-JNZ P
-JMP EXIT
-P:
-SHL BL, 1
-INI:
-SHR BH, 1
-JNC SALTA
+JMP CONTROL       ;logica para multiplicacao
+INI:              ; 
+CMP BH, 0         ;compara o conteudo do multiplicador com 0, se for, jmp resul, terminando a multiplicacao
+JNZ PULA          
+JMP RESUL
+PULA:
+SHL BL, 1         ;desloca o multiplicando uma casa para a esquerda, equivale a x2
+CONTROL:          ;logica que decide se vai somar ou nao, depende do flag carry
+SHR BH, 1         ;desloca o multiplicador para a direita, verificando o flag carry
+JNC INI           ;se c=1 add depois volta para ini:, se c=0 ini:
 ADD CH, BL
-JMP SALTA
+JMP INI
 
-EXIT:
-CMP CH, 9
-JNG MENOR0
-MOV CL, CH
-AND CX, 00FFH
+RESUL:
+CMP CH, 9         ;compara se o resultado e maior que 9
+JNG MENOR0        ;se for continua, se nao menor0:
+MOV CL, CH       
+AND CX, 00FFH 
 MOV AX, CX
 JMP MAIOR
 MENOR0:
-MOV DL, CH
+MOV DL, CH        
 MOV AH, 02
 OR DL, 30H
-INT 21H
+INT 21H           ;impressao do resultado
 JMP SAIDA
 
 DIVISAO:
@@ -254,6 +260,21 @@ INT 21H
 JMP SAIDA
 
 SAIDA:
+MOV AH,09H
+LEA DX, msg9      ;exibicao msg9 - deseja voltar ou sair?
+INT 21H
+
+MOV AH,07H        ;interrupcao para escolha
+INT 21H
+
+CMP AL, 13        ;condicao para voltar
+JNE SAIDA0       
+XOR AX,AX         ;zerando os registradores para realizar novas operacoes
+XOR BX,BX         ;
+XOR CX,CX         ;
+XOR DX,DX         ;
+JMP INICIO
+SAIDA0:
 MOV AH, 4CH       
 INT 21H           ;saida
  
