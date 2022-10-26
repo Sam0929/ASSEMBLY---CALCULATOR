@@ -3,18 +3,16 @@ TITLE SAMUEL_VANINI_22900955
 .model small
 
 .data
-    msg0 DB 'ESCOLHA A OPERACAO DESEJADA:',10,'1-ADICAO',10, '2-SUBTRACAO',10, '3-MULTIPLICACAO',10, '4-DIVISAO', 10, 10, '$'
+    msg0 DB 10, 80 DUP('-'),10,'ESCOLHA A OPERACAO DESEJADA:',10,'1-ADICAO',10, '2-SUBTRACAO',10, '3-MULTIPLICACAO',10, '4-DIVISAO', 10, 10, '$'
     msg1 DB 10,'DIGITE UM NUMERO DE 0 A 9:', '$'
-    msg2 DB 10,'DIGITE O NUMERO QUE DESEJA SOMAR:', '$'
-    msg3 DB 10,'DIGITE O NUMERO QUE DESEJA SUBTRAIR:', '$'
-    msg4 DB 10,'DIGITE O NUMERO QUE DESEJA MULTIPLICAR:', '$'
-    msg5 DB 10,'DIGITE O NUMERO QUE DESEJA DIVIDIR:', '$'
+    msg2 DB 10,'DIGITE UM SEGUNDO NUMERO DE 0 A 9:', '$'
+    msg3 DB 10, 30 DUP('-'), 'CALCULADORA ASSEMBLY', 30 DUP('-'),10,10, '$'
     msg6 DB 10,'RESULTADO:', '$'
     msg7 DB 'ERRO, POR FAVOR SELECIONE UMA OPERACAO VALIDA', 10, 10, '$'
     msg8 DB 'PRESSIONE QUALQUER TECLA PARA VOLTAR', 10, 10, '$'
-    msg9 DB 10,10,'APERTE ENTER PARA REALIZAR UMA NOVA OPERACAO', 10, 'OU PRESSIONER QUALQUER TECLA PARA SAIR','$'
+    msg9 DB 10,10,10,'APERTE ENTER PARA REALIZAR UMA NOVA OPERACAO', 10, 'OU PRESSIONER QUALQUER TECLA PARA SAIR','$'
     msg10 DB 10, 'RESTO:', '$'
-    Limpa DB 19 DUP (10), '$'
+    Limpa DB 25 DUP (10), '$'
 
 .code
 
@@ -28,6 +26,28 @@ INICIO:
 MOV AH, 09H
 LEA DX, Limpa     ;exibicao Limpa  - vetor com espacos para limpar a tela
 INT 21H
+
+MOV AH, 09H
+LEA DX, msg3    ;exibicao Limpa  - vetor com espacos para limpar a tela
+INT 21H
+
+MOV AH, 09H
+LEA DX, msg1      ;exibicao msg1  - digite
+INT 21H
+
+MOV AH, 01H
+INT 21H
+AND AL, 0FH
+MOV BL, AL
+
+MOV AH, 09H
+LEA DX, msg2      ;exibicao msg4  - digite o segundo
+INT 21H
+
+MOV AH, 01H
+INT 21H
+AND AL, 0FH
+MOV BH, AL
 
 MOV AH, 09H
 LEA DX, msg0      ;exibicao msg0  - escolha operacao
@@ -67,23 +87,6 @@ INT 21H
 JMP INICIO          
 
 ADICAO:
-MOV AH, 09H
-LEA DX, msg1      ;exibicao msg1  - digite
-INT 21H
-
-MOV AH, 01H
-INT 21H           ;entrada primeiro numero
-AND AL, 0FH
-MOV BL, AL
-
-MOV AH,09H
-LEA DX, msg2      ;exibicao msg2  - digite somar
-INT 21H
-
-MOV AH, 01H
-INT 21H
-AND AL, 0FH       ;entrada segundo numero
-MOV BH, AL
 
 ADD BL, BH        ;operacao logica aritmetica adicao
 AND BH, 0F0H
@@ -117,74 +120,37 @@ MOV DL, BH
 OR DL,30H
 INT 21H
 
-
 JMP SAIDA
 
-
 SUBTRACAO:
-MOV AH, 09H
-LEA DX, msg1      ;exibicao msg1  - digite
-INT 21H
-
-MOV AH, 01H
-INT 21H
-AND AL, 0FH
-MOV BH, AL
-
-MOV AH, 09H
-LEA DX, msg3      ;exibicao msg3  - digite o que deseja sub
-INT 21H
-
-MOV AH, 01H
-INT 21H
-AND AL, 0FH
-MOV BL, AL
 
 MOV AH, 09H       
 LEA DX, msg6      ;exibicao msg6 - resultado
 INT 21H
 
-SUB BH,BL
-CMP BH,-1
+SUB BL,BH
+CMP BL,-1
 JNG MENOR
-OR BH, 30H
+OR BL, 30H
 
 MOV AH,02H
-MOV DL,BH
+MOV DL,BL
 INT 21H
 
 JMP SAIDA
 
 MENOR:
 MOV AH,02
-NEG BH
-OR BH,30H
+NEG BL
+OR BL,30H
 MOV DL,2DH
 INT 21H
-MOV DL,BH
+MOV DL,BL
 INT 21H
 
 JMP SAIDA
 
 MULTIPLICACAO:
-
-MOV AH, 09H
-LEA DX, msg1      ;exibicao msg1  - digite
-INT 21H
-
-MOV AH, 01H
-INT 21H
-AND AL, 0FH
-MOV BL, AL
-
-MOV AH, 09H
-LEA DX, msg4      ;exibicao msg4  - digite o que deseja mul
-INT 21H
-
-MOV AH, 01H
-INT 21H
-AND AL, 0FH
-MOV BH, AL
 
 MOV AH, 09H       
 LEA DX, msg6      ;exibicao msg6 - resultado
@@ -218,24 +184,6 @@ INT 21H           ;impressao do resultado
 JMP SAIDA
 
 DIVISAO:
-
-MOV AH, 09H
-LEA DX, msg1      ;exibicao msg1  - digite
-INT 21H
-
-MOV AH, 01H
-INT 21H
-AND AL, 0FH
-MOV BL, AL
-
-MOV AH, 09H
-LEA DX, msg5      ;exibicao msg5  - digite o que deseja div 
-INT 21H
-
-MOV AH, 01H
-INT 21H
-AND AL, 0FH
-MOV BH, AL
 
 MOV AH, 09H       
 LEA DX, msg6      ;exibicao msg6 - resultado
