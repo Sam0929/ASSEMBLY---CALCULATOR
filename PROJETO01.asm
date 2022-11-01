@@ -8,10 +8,10 @@ TITLE SAMUEL_VANINI_22900955
     msg2 DB 13, 10,'DIGITE UM SEGUNDO NUMERO DE 0 A 9:', '$'
     msg3 DB 3 DUP (13,10), 32 DUP('-'), 'FEITO POR SAMUEL', 32 DUP('-'),13, 10,'ESCOLHA A OPERACAO DESEJADA:',2 DUP (13,10), '1-ADICAO',13, 10, '2-SUBTRACAO', 13, 10, '3-MULTIPLICACAO',13, 10, '4-DIVISAO', 2 DUP (13,10), '$'
     msg4 DB 13, 10,'RESULTADO:', '$'
-    msg6 DB 'ERRO, POR FAVOR SELECIONE UMA OPERACAO VALIDA', 2 DUP (13,10), '$'
-    msg7 DB 'PRESSIONE QUALQUER TECLA PARA VOLTAR', 2 DUP (13,10), '$'
-    msg8 DB 3 DUP (13,10),'APERTE ENTER PARA REALIZAR UMA NOVA OPERACAO', 13, 10, 'OU PRESSIONER QUALQUER TECLA PARA SAIR','$'
-    msg9 DB 13, 10, 'RESTO:', '$'
+    msg5 DB 'ERRO! , POR FAVOR SELECIONE UMA OPERACAO VALIDA!', 2 DUP (13,10), 'PRESSIONE QUALQUER TECLA PARA TENTAR NOVAMENTE','$'
+    msg6 DB 3 DUP (13,10),'APERTE ENTER PARA REALIZAR UMA NOVA OPERACAO', 13, 10, 'OU PRESSIONER QUALQUER TECLA PARA SAIR','$'
+    msg7 DB 13, 10, 'RESTO:', '$'
+    ZERO DB 13,10, 'DIVISOES POR 0 NAO EXISTEM, POR FAVOR, TENTE NOVAMENTE!', '$'
     Limpa DB 25 DUP (13, 10), '$'
 
 .code
@@ -84,78 +84,75 @@ JMP DIVISAO
 SALTA03:
 
 MOV AH, 09H
-LEA DX, msg6          ;se nenhuma condicao for verdadeira
-INT 21H               ;um erro é impresso 
-LEA DX, msg7        
-INT 21H               ;pede-se para o usuario pressionar qualquer tecla para voltar
+LEA DX, msg5          ;se nenhuma condicao for verdadeira
+INT 21H               ;um erro é impresso
 
-MOV AH, 07H           ;leitura da tecla, funciona como uma interrupcao, o caracter lido nao tem importancia para a logica do programa 
-INT 21H
-JMP INICIO          
+MOV AH, 07H           
+INT 21H               ;leitura da tecla, tem a funcao de parar o programa ate a entrada de algum caracter, o caracter lido nao tem importancia para a logica do programa 
+JMP INICIO            
 
 ADICAO:
-
-ADD BL, BH            ;operacao logica aritmetica adicao
-AND BH, 0F0H
-CMP BL, 9
-JNG MENOR0A
-MOV AX, BX 
-JMP MAIOR
-MENOR0A:
-OR BL, 30H            ; OR 30h volta a ser caracter
 
 MOV AH, 09H       
 LEA DX, msg4          ;exibicao msg - resultado
 INT 21H
+ADD BL, BH            ;operacao logica aritmetica adicao
+CMP BL, 9
+JNG MENOR0A
+AND BH, 00H           ;limpa o registrador BH para BX so possuir o resultado da adicao em BL
+MOV AX, BX 
+JMP MAIOR             ;pula para a logica que imprime resultado maiores que 9
+MENOR0A:
 
+OR BL, 30H            ;OR 30h volta a ser caracter
 MOV AH, 02H      
-MOV DL, BL            ;exibicao resultado
-INT 21H
+MOV DL, BL            
+INT 21H               ;imprime o resultado
 
 JMP SAIDA
 
-MAIOR:
-MOV BL,10
-DIV BL
-MOV BX,AX
-MOV DL,BL             ;logica para imprimir resultados maiores que 9
-OR DL,30H
+MAIOR:                ;logica para imprimir resultados maiores que 9
+MOV BL,10             
+DIV BL                ;dividi-se o resultado, armazenado em bx por 10, obtendo o digito de maior ordem decimal em AL e o digito de menor ordem decimal em AH
+MOV BX,AX             ;salvo o resultado em bx
 MOV AH,02H
-INT 21H
+MOV DL,BL             
+OR DL,30H             ;transforma o numero em caracter
+INT 21H               ;imprime o digito de maior ordem decimal
 
 MOV DL, BH
-OR DL,30H
-INT 21H
+OR DL,30H             ;transforma o numero em caracter
+INT 21H               ;imprime o digito de menor ordem decimal
 
 JMP SAIDA
 
 SUBTRACAO:
 
 MOV AH, 09H       
-LEA DX, msg4              ;exibicao msg - resultado
+LEA DX, msg4          ;exibicao msg - resultado
 INT 21H
 
-SUB BL,BH
-CMP BL,-1
-JNG MENOR
-OR BL, 30H
+SUB BL,BH             ;executa a subtracao dos numeros
+CMP BL,-1             ;compara se o resultado e maior do que -1
+JNG MENOR             ;se nao for maior pula para a logica que imprime resultados menores do que 0
+OR BL, 30H            ;transforma o numero em caracter
 
 MOV AH,02H
-MOV DL,BL
-INT 21H
+MOV DL,BL          
+INT 21H               ;imprime o resultado da subtracao
 
 JMP SAIDA
 
-MENOR:
-MOV AH,02
-NEG BL
-OR BL,30H
-MOV DL,2DH
-INT 21H
+MENOR:                ;logica que imprime resultados menores que 0
+MOV AH,02             
+NEG BL                ;aplica o C2 no resultado e se obtem o numero resultante da subtracao como um numero positivo novamente
+OR BL,30H             ;transforma o numero em caracter
+MOV DL,2DH            ;2DH se refere ao caracter '-'
+INT 21H               ;imprime o sinal de menos '-'
 MOV DL,BL
-INT 21H
+INT 21H               ;imprime o resultado
 
-JMP SAIDA
+JMP SAIDA            
 
 MULTIPLICACAO:
 
@@ -182,7 +179,7 @@ JNG MENOR0            ;se for continua, se nao menor0:
 MOV CL, CH       
 AND CX, 00FFH 
 MOV AX, CX
-JMP MAIOR
+JMP MAIOR             ;salta para a logica que imprime resultados maiores que 9
 MENOR0:
 MOV DL, CH        
 MOV AH, 02
@@ -192,49 +189,49 @@ JMP SAIDA
 
 DIVISAO:
 
-MOV AH, 09H       
+MOV AH, 09H
+CMP BH,0              ;compara se o divisor e 0 logo no inicio, caso z=1, salta para ERRO
+JZ ERRO        
 LEA DX, msg4          ;exibicao msg - resultado
 INT 21H
-
-JMP INI0
-
-NEGAT:
-MOV AH,09
-LEA DX, msg9
-INT 21H 
-MOV AH,02
-OR BL, 30H
-MOV DL, BL
-INT 21H
-JMP SAIDA
-
+           
 INI0:
-CMP BH,BL
-JNG POSIT
-JMP RESUL0
+CMP BH,BL            
+JNG POSIT             ;se o divisor for menor que o dividendo, executa o algoritmo de divisao, representado pelo label POSIT
+JMP RESUL0            ;se o divisor for maior, pula para RESUL0, imprimindo quantas vezes o dividendo pode ser dividido pelo divisor
 POSIT:
-SUB BL,BH
-ADD CH, 1B
-CMP BL,0
-JNE C
-JMP RESUL0
-C:
-JMP INI0
+SUB BL,BH             ;subtrai do dividendo o divisor
+ADD CH, 1             ;adiciona 1 em CH que representa quantas vezes o divisor pode ser multiplicado sem ser maior que o dividendo
+JMP INI0              ;volta para o INI0 ate o divisor ser maior que o dividendo
 
 RESUL0:
 MOV AH, 02H
 OR CH, 30H
 MOV DL, CH
-INT 21H
-CMP BL,0
-JE P
-JMP NEGAT
+INT 21H               ;impressao do resultado da divisao
+CMP BL,0              ;comparacao para ver se a divisao e exata
+JE P                  ;caso for, pula para SAIDA
+JMP RESTO_            ;caso nao, pula para RESTO_
 P:
 JMP SAIDA
 
+RESTO_:
+MOV AH,09
+LEA DX, msg7          ;exibicao msg - resto
+INT 21H 
+MOV AH,02             
+OR BL, 30H
+MOV DL, BL
+INT 21H               ;imprime quanto sobrou do dividendo, que nao pode ser dividido
+JMP SAIDA
+
+ERRO:
+LEA DX, ZERO
+INT 21H
+
 SAIDA:
 MOV AH,09H
-LEA DX, msg8          ;exibicao msg8 - deseja voltar ou sair?
+LEA DX, msg6          ;exibicao msg6 - deseja voltar ou sair?
 INT 21H
 
 MOV AH,07H            ;interrupcao para escolha
