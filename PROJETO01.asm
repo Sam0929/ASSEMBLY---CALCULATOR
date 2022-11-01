@@ -8,10 +8,11 @@ TITLE SAMUEL_VANINI_22900955
     msg2 DB 13, 10,'DIGITE UM SEGUNDO NUMERO DE 0 A 9:', '$'
     msg3 DB 3 DUP (13,10), 32 DUP('-'), 'FEITO POR SAMUEL', 32 DUP('-'),13, 10,'ESCOLHA A OPERACAO DESEJADA:',2 DUP (13,10), '1-ADICAO',13, 10, '2-SUBTRACAO', 13, 10, '3-MULTIPLICACAO',13, 10, '4-DIVISAO', 2 DUP (13,10), '$'
     msg4 DB 13, 10,'RESULTADO:', '$'
-    msg5 DB 'ERRO! , POR FAVOR SELECIONE UMA OPERACAO VALIDA!', 2 DUP (13,10), 'PRESSIONE QUALQUER TECLA PARA TENTAR NOVAMENTE','$'
-    msg6 DB 3 DUP (13,10),'APERTE ENTER PARA REALIZAR UMA NOVA OPERACAO', 13, 10, 'OU PRESSIONER QUALQUER TECLA PARA SAIR','$'
-    msg7 DB 13, 10, 'RESTO:', '$'
-    ZERO DB 13,10, 'DIVISOES POR 0 NAO EXISTEM, POR FAVOR, TENTE NOVAMENTE!', '$'
+    msg5 DB 13, 10,'QUOCIENTE:', '$'
+    msg6 DB 'ERRO! , POR FAVOR SELECIONE UMA OPERACAO VALIDA!', 2 DUP (13,10), 'PRESSIONE QUALQUER TECLA PARA TENTAR NOVAMENTE','$'
+    msg7 DB 3 DUP (13,10),'APERTE ENTER PARA REALIZAR UMA NOVA OPERACAO', 13, 10, 'OU PRESSIONER QUALQUER TECLA PARA SAIR','$'
+    msg8 DB 13, 10, 'RESTO:', '$'
+    ZERO DB 13, 10, 'DIVISOES POR 0 NAO EXISTEM, POR FAVOR, TENTE NOVAMENTE!', '$'
     Limpa DB 25 DUP (13, 10), '$'
 
 .code
@@ -44,7 +45,7 @@ INT 21H
 
 MOV AH, 01H
 INT 21H               ;entrada do primeiro caracter
-AND AL, 0FH
+AND AL, 0FH           ;and 0fh transforma o caracter em numero para ser operado
 MOV BL, AL
 
 MOV AH, 09H
@@ -53,11 +54,11 @@ INT 21H
 
 MOV AH, 01H
 INT 21H               ;entrada do segundo caracter
-AND AL, 0FH
+AND AL, 0FH           ;and 0fh transforma o caracter em numero para ser operado
 MOV BH, AL
 
 MOV AH, 09H
-LEA DX, msg3          ;exibicao msg0  - escolha operacao
+LEA DX, msg3          ;exibicao msg3  - escolha operacao
 INT 21H 
 
 MOV AH, 07H       
@@ -84,7 +85,7 @@ JMP DIVISAO
 SALTA03:
 
 MOV AH, 09H
-LEA DX, msg5          ;se nenhuma condicao for verdadeira
+LEA DX, msg6          ;se nenhuma condicao for verdadeira
 INT 21H               ;um erro é impresso
 
 MOV AH, 07H           
@@ -94,14 +95,14 @@ JMP INICIO
 ADICAO:
 
 MOV AH, 09H       
-LEA DX, msg4          ;exibicao msg - resultado
+LEA DX, msg4          ;exibicao msg4 - resultado
 INT 21H
 ADD BL, BH            ;operacao logica aritmetica adicao
 CMP BL, 9
-JNG MENOR0A
+JNG MENOR0A           ;caso o resultado for menor do que 10, pula para MENOR0A
 AND BH, 00H           ;limpa o registrador BH para BX so possuir o resultado da adicao em BL
 MOV AX, BX 
-JMP MAIOR             ;pula para a logica que imprime resultado maiores que 9
+JMP MAIOR             ;pula para a logica que imprime resultados maiores que 9
 MENOR0A:
 
 OR BL, 30H            ;OR 30h volta a ser caracter
@@ -114,7 +115,7 @@ JMP SAIDA
 MAIOR:                ;logica para imprimir resultados maiores que 9
 MOV BL,10             
 DIV BL                ;dividi-se o resultado, armazenado em bx por 10, obtendo o digito de maior ordem decimal em AL e o digito de menor ordem decimal em AH
-MOV BX,AX             ;salvo o resultado em bx
+MOV BX,AX             ;salvo o resultado em BX
 MOV AH,02H
 MOV DL,BL             
 OR DL,30H             ;transforma o numero em caracter
@@ -129,7 +130,7 @@ JMP SAIDA
 SUBTRACAO:
 
 MOV AH, 09H       
-LEA DX, msg4          ;exibicao msg - resultado
+LEA DX, msg4          ;exibicao msg4 - resultado
 INT 21H
 
 SUB BL,BH             ;executa a subtracao dos numeros
@@ -162,14 +163,14 @@ INT 21H
 
 JMP CONTROL           ;logica para multiplicacao
 INI:                  ; 
-CMP BH, 0             ;compara o conteudo do multiplicador com 0, se for, jmp resul, terminando a multiplicacao
+CMP BH, 0             ;compara o conteudo do multiplicador com 0, se for, jmp RESUL, terminando a multiplicacao
 JNZ PULA          
 JMP RESUL
 PULA:
 SHL BL, 1             ;desloca o multiplicando uma casa para a esquerda, equivale a x2
 CONTROL:              ;logica que decide se vai somar ou nao, depende do flag carry
 SHR BH, 1             ;desloca o multiplicador para a direita, verificando o flag carry
-JNC INI               ;se c=1 add depois volta para ini:, se c=0 ini:
+JNC INI               ;se c=1 add depois volta para INI:, se c=0 vai para o label INI:
 ADD CH, BL
 JMP INI
 
@@ -192,7 +193,7 @@ DIVISAO:
 MOV AH, 09H
 CMP BH,0              ;compara se o divisor e 0 logo no inicio, caso z=1, salta para ERRO
 JZ ERRO        
-LEA DX, msg4          ;exibicao msg - resultado
+LEA DX, msg5          ;exibicao msg - quociente
 INT 21H
            
 INI0:
@@ -211,13 +212,13 @@ MOV DL, CH
 INT 21H               ;impressao do resultado da divisao
 CMP BL,0              ;comparacao para ver se a divisao e exata
 JE P                  ;caso for, pula para SAIDA
-JMP RESTO_            ;caso nao, pula para RESTO_
+JMP RESTO             ;caso nao, pula para RESTO
 P:
 JMP SAIDA
 
-RESTO_:
+RESTO:
 MOV AH,09
-LEA DX, msg7          ;exibicao msg - resto
+LEA DX, msg8          ;exibicao msg - resto
 INT 21H 
 MOV AH,02             
 OR BL, 30H
@@ -231,7 +232,7 @@ INT 21H
 
 SAIDA:
 MOV AH,09H
-LEA DX, msg6          ;exibicao msg6 - deseja voltar ou sair?
+LEA DX, msg7          ;exibicao msg7 - deseja voltar ou sair?
 INT 21H
 
 MOV AH,07H            ;interrupcao para escolha
