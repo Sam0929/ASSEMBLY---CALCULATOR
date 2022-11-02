@@ -7,29 +7,28 @@ TITLE SAMUEL_VANINI_22900955
     msg1 DB 13, 10,'DIGITE UM NUMERO DE 0 A 9:', '$'
     msg2 DB 13, 10,'DIGITE UM SEGUNDO NUMERO DE 0 A 9:', '$'
     msg3 DB 3 DUP (13,10), 32 DUP('-'), 'FEITO POR SAMUEL', 32 DUP('-'),13, 10,'ESCOLHA A OPERACAO DESEJADA:',2 DUP (13,10), '1-ADICAO',13, 10, '2-SUBTRACAO', 13, 10, '3-MULTIPLICACAO',13, 10, '4-DIVISAO', '$'
-    msg4 DB 13, 10,'RESULTADO:', '$'
-    msg5 DB 13, 10,'QUOCIENTE:', '$'
+    msg4 DB 'RESULTADO:', '$'
+    msg5 DB 'QUOCIENTE:', '$'
     msg6 DB 'ERRO! , POR FAVOR SELECIONE UMA OPERACAO VALIDA!', 2 DUP (13,10), 'PRESSIONE QUALQUER TECLA PARA TENTAR NOVAMENTE','$'
-    msg7 DB 3 DUP (13,10),'APERTE ENTER PARA REALIZAR UMA NOVA OPERACAO', 13, 10, 'OU PRESSIONER QUALQUER TECLA PARA SAIR','$'
+    msg7 DB 3 DUP (13,10),'APERTE ENTER PARA REALIZAR UMA NOVA OPERACAO',2 DUP (13,10), 'OU PRESSIONER QUALQUER TECLA PARA SAIR','$'
     msg8 DB 13, 10, 'RESTO:', '$'
-    zero DB 13, 10, 'DIVISOES POR 0 NAO EXISTEM, POR FAVOR, TENTE NOVAMENTE!', '$'
+    zero DB 'DIVISOES POR 0 NAO EXISTEM, POR FAVOR, TENTE NOVAMENTE!', '$'
     limpa DB 25 DUP (13, 10), '$'
-    linha DB 2 DUP (13,10), 80 DUP('-'), '$'
+    linha DB 2 DUP (13,10), 80 DUP('-'), 2 DUP (13,10), '$'
 
 .code
 
-
 MAIN PROC
 
-MOV AH, 06H           ;
-XOR AL, AL            ;seta as flags necessarias
+MOV AH, 06H           ;funcao para mudar a cor do texto na int 10h, usando o registro bh
+XOR AL, AL            ;
 XOR CX, CX            ;
 MOV DX, 184FH         ;       
-MOV BH, 0Bh           ;0Bh equivale a ciano
+MOV BH, 0Bh           ;0 equivale a preto -background color e b equivale a ciano - text color
 INT 10H               ;muda a cor do texto exibido durante a execucao do programa
 
-MOV AX, @DATA
-MOV DS, AX
+MOV AX, @DATA         ;inicio do endereco do segmento de dados em ax
+MOV DS, AX            ;inicializando o data segment com o valor de ax
 
 JMP INICIO
 
@@ -106,7 +105,7 @@ SALTA03:
 
 MOV AH, 09H
 LEA DX, msg6          ;se nenhuma condicao for verdadeira
-INT 21H               ;um erro é impresso
+INT 21H               ;um erro e impresso
 
 MOV AH, 07H           
 INT 21H               ;leitura da tecla, tem a funcao de parar o programa ate a entrada de algum caracter, o caracter lido nao tem importancia para a logica do programa 
@@ -247,7 +246,7 @@ XOR DX,DX             ;
 JMP INICIO
 SAIDA0:
 MOV AH, 4CH       
-INT 21H               ;saida
+INT 21H               ;saida, fim do programa
  
 MAIN ENDP
 
