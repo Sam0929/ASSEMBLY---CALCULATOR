@@ -60,7 +60,6 @@ INT 21H               ;exibicao msg1  - digite o primeiro
 
 MOV AH, 01H
 INT 21H               ;entrada do primeiro caracter
-CMP AL, 39H
 AND AL, 0FH           ;and 0fh transforma o caracter em numero para ser operado
 MOV BL, AL
 
@@ -70,7 +69,6 @@ INT 21H               ;exibicao msg2  - digite o segundo
 
 MOV AH, 01H
 INT 21H               ;entrada do segundo caracter
-CMP AL, 39H
 AND AL, 0FH           ;and 0fh transforma o caracter em numero para ser operado
 MOV BH, AL
 
